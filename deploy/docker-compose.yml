@@ -1,0 +1,118 @@
+version: "3.9"
+
+# ============================================================
+# docker-compose.yml
+# Smart Door Access Control System — Production Stack
+#
+# Services:
+#   - postgres     : PostgreSQL 16 database
+#   - redis        : Redis for optional caching / token blacklist
+#   - backend      : FastAPI + Uvicorn
+#   - frontend     : React build served via Nginx
+#
+# Raspberry Pi is NOT included — it connects over the network.
+#
+# Usage:
+#   cp deploy/.env.production .env
+#   docker-compose up -d
+# ============================================================
+
+services:
+
+  # ─── PostgreSQL ──────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: smartdoor_postgres
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-smart_door_db}
+      POSTGRES_USER: ${POSTGRES_USER:-smartdoor}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    ports:
+      - "5432:5432"         # Remove in production (expose only to backend)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-smartdoor}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Redis ───────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: smartdoor_redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redispass} --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"         # Remove in production
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Backend (FastAPI) ───────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: smartdoor_backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-smartdoor}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-smart_door_db}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-redispass}@redis:6379/0
+    volumes:
+      - ./backend:/app
+      - backend_uploads:/app/uploads
+    ports:
+      - "8000:8000"         # Internal — Nginx proxies this
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # ─── Frontend (Nginx) ────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: smartdoor_frontend
+    restart: unless-stopped
+    volumes:
+      - ./deploy/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "80:80"
+      - "443:443"           # Uncomment when SSL cert is configured
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+# ─── Named volumes ────────────────────────────────────────────
+volumes:
+  postgres_data:
+  redis_data:
+  backend_uploads:
+
+# ─── Networks ────────────────────────────────────────────────
+networks:
+  default:
+    name: smartdoor_network
