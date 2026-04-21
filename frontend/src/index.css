@@ -371,3 +371,200 @@ select.input {
 .stagger > *:nth-child(6) {
   animation-delay: 0.3s;
 }
+
+/* ============================================================
+   SMARTDOOR RESPONSIVE SYSTEM
+   Tất cả style Desktop nằm TRÊN đây — KHÔNG thay đổi.
+   Phần dưới chỉ kích hoạt khi màn hình ≤ 767px (mobile)
+   hoặc ≤ 1023px (tablet). Desktop hoàn toàn không bị ảnh hưởng.
+   ============================================================ */
+
+/* ── Desktop grid classes (default — không @media) ─────────────── */
+
+/* Dashboard: 4 stat cards */
+.sd-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Dashboard: camera | controls 2 cols */
+.sd-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+/* Residents: stat counters 3 cols */
+.sd-res-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* Residents: cards fluid */
+.sd-res-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+/* Settings: auto-fill 380px cards */
+.sd-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Navbar: desktop nav visible, hamburger hidden */
+.sd-desktop-nav {
+  display: flex;
+}
+.sd-hamburger {
+  display: none !important;
+}
+.sd-user-block {
+  display: flex;
+}
+.sd-ws-badge {
+  display: flex;
+}
+.sd-alarm-badge {
+  display: inline-flex;
+}
+
+/* Table wrapper — for horizontal scroll on narrow tables */
+.sd-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Tablet (768px – 1023px) ─────────────────────────────────── */
+@media (max-width: 1023px) {
+  /* Dashboard stats: 2×2 thay vì 1 hàng 4 cột */
+  .sd-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Settings: giảm minmax để fit tablet */
+  .sd-settings-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+/* ── Mobile (≤ 767px) ─────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* ── Navbar ─────────────────────────────────────────────────── */
+  /* Ẩn menu ngang, hiện hamburger */
+  .sd-desktop-nav {
+    display: none !important;
+  }
+  .sd-hamburger {
+    display: flex !important;
+  }
+  /* Ẩn username + logout khỏi header (đã có trong dropdown) */
+  .sd-user-block {
+    display: none !important;
+  }
+  /* WS và alarm giữ lại nhưng compact hơn */
+  .sd-ws-badge span:last-child {
+    display: none;
+  } /* ẩn text "Live/Offline", giữ dot */
+
+  /* Header inner padding giảm */
+  header > div:first-child {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  /* Main content padding giảm */
+  main {
+    padding: 1rem 0.75rem !important;
+  }
+
+  /* ── Dashboard ───────────────────────────────────────────────── */
+  /* Stats: 2×2 trên mobile */
+  .sd-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem !important;
+  }
+
+  /* Main grid: 1 cột, camera trên — controls dưới */
+  .sd-main-grid {
+    grid-template-columns: 1fr;
+    gap: 0.65rem !important;
+  }
+
+  /* ── Residents ───────────────────────────────────────────────── */
+  /* Stat counters: vẫn 3 cột nhưng padding nhỏ */
+  .sd-res-stats {
+    gap: 0.5rem !important;
+  }
+  .sd-res-stats .card {
+    padding: 0.75rem 0.5rem !important;
+  }
+
+  /* Cards: 1 cột duy nhất trên mobile */
+  .sd-res-grid {
+    grid-template-columns: 1fr;
+    gap: 0.6rem !important;
+  }
+
+  /* ── Settings ────────────────────────────────────────────────── */
+  /* Sections xếp chồng dọc */
+  .sd-settings-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  /* ── Cards ───────────────────────────────────────────────────── */
+  .card {
+    padding: 1rem !important;
+  }
+
+  /* ── Modals ──────────────────────────────────────────────────── */
+  /* Modal slide lên từ dưới — giống bottom sheet */
+  .modal-overlay {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  .modal {
+    max-width: 100% !important;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+    padding: 1.25rem 1rem !important;
+    max-height: 92dvh;
+    overflow-y: auto;
+  }
+
+  /* ── Tables ──────────────────────────────────────────────────── */
+  /* Bảng data cuộn ngang, không làm vỡ trang */
+  .data-table-wrap,
+  .sd-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── Typography ──────────────────────────────────────────────── */
+  h1 {
+    font-size: 1.05rem !important;
+  }
+  h2 {
+    font-size: 0.95rem !important;
+  }
+
+  /* ── Notification dropdown ───────────────────────────────────── */
+  /* Dropdown thông báo: full width */
+  .sd-notif-dropdown {
+    width: calc(100vw - 2rem) !important;
+    right: -0.5rem !important;
+  }
+}
+
+/* ── Small mobile (≤ 479px) ──────────────────────────────────── */
+@media (max-width: 479px) {
+  main {
+    padding: 0.75rem 0.6rem !important;
+  }
+
+  /* Stats dashboard: giảm font size value */
+  .sd-stats-grid .card p:first-child {
+    font-size: 0.8rem !important;
+  }
+}

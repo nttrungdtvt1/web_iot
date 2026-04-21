@@ -3,9 +3,12 @@ models/access_log.py
 Access log ORM model — records every door access attempt.
 """
 
+from __future__ import annotations
 from datetime import datetime, timezone
-from typing import Optional
-from sqlalchemy import String, Text, DateTime, ForeignKey, Enum
+from typing import Optional, TYPE_CHECKING
+if TYPE_CHECKING:
+    from models.resident import Resident
+from sqlalchemy import String, Text, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
 from core.database import Base
@@ -63,6 +66,8 @@ class AccessLog(Base):
 
     # Snapshot image URL from cloud storage
     image_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    # Cloud storage public ID (for deletion)
+    image_public_id: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Extra details (e.g., confidence score for face recognition)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)

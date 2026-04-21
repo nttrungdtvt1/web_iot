@@ -174,11 +174,16 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Đọc CORS từ .env — đã bao gồm IP LAN 192.168.137.1:5173
+# CORS_ORIGINS = os.getenv(
+#     'CORS_ORIGINS',
+#     'http://localhost:3000,http://localhost:5173,http://192.168.137.1:5173,http://127.0.0.1:5173'
+# ).split(',')
 CORS_ORIGINS = os.getenv(
     'CORS_ORIGINS',
-    'http://localhost:3000,http://localhost:5173,http://192.168.137.1:5173,http://127.0.0.1:5173'
+    'http://localhost:3000,http://localhost:5173,https://localhost:5173,'
+    'http://192.168.137.1:5173,https://192.168.137.1:5173,'
+    'http://127.0.0.1:5173,https://127.0.0.1:5173'
 ).split(',')
-
 
 # ─── Lifespan ────────────────────────────────────────────────────────────────
 

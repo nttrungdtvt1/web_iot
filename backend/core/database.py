@@ -1,13 +1,10 @@
-"""
-core/database.py
+"""core/database.py
 SQLAlchemy engine, session factory, and Base model.
 Supports SQLite (dev) and PostgreSQL (prod) via DATABASE_URL env variable.
 """
 
-from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.orm import DeclarativeBase
 import os
 from dotenv import load_dotenv
 
@@ -79,9 +76,10 @@ async def init_db():
     """
     async with async_engine.begin() as conn:
         # Import all models so Base knows about them
-        from models.resident import Resident  # noqa
-        from models.access_log import AccessLog  # noqa
-        from models.system_event import SystemEvent  # noqa
-        from models.user import User  # noqa
+        from models.resident import Resident  # noqa: F401 — needed for Base.metadata
+        from models.access_log import AccessLog  # noqa: F401
+        from models.system_event import SystemEvent  # noqa: F401
+        from models.user import User  # noqa: F401
+        from models.pin_config import PinConfig  # noqa: F401
 
         await conn.run_sync(Base.metadata.create_all)

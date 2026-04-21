@@ -1,52 +1,3 @@
-// /**
-//  * api/apiClient.js
-//  * Configured Axios instance with JWT interceptor.
-//  * Automatically attaches Bearer token to all requests.
-//  * Redirects to /login on 401 Unauthorized.
-//  */
-
-// import axios from "axios";
-
-// const BASE_URL = "/api";
-
-// const apiClient = axios.create({
-//   baseURL: BASE_URL,
-//   timeout: 30000,
-//   headers: {
-//     "Content-Type": "application/json",
-//   },
-// });
-
-// // ─── Request interceptor: attach JWT ─────────────────────────────────────────
-// apiClient.interceptors.request.use(
-//   (config) => {
-//     const token = localStorage.getItem("access_token");
-//     if (token) {
-//       config.headers.Authorization = `Bearer ${token}`;
-//     }
-//     return config;
-//   },
-//   (error) => Promise.reject(error),
-// );
-
-// // ─── Response interceptor: handle auth errors ────────────────────────────────
-// apiClient.interceptors.response.use(
-//   (response) => response,
-//   (error) => {
-//     if (error.response?.status === 401) {
-//       // Token expired or invalid — clear storage and redirect to login
-//       localStorage.removeItem("access_token");
-//       localStorage.removeItem("user");
-//       if (window.location.pathname !== "/login") {
-//         window.location.href = "/login";
-//       }
-//     }
-//     return Promise.reject(error);
-//   },
-// );
-
-// export default apiClient;
-
 /**
  * api/apiClient.js
  *
@@ -67,7 +18,7 @@ import axios from "axios";
 
 const apiClient = axios.create({
   baseURL: "/api", // tương đối → đi qua Vite proxy → 192.168.137.1:8000
-  timeout: 30000,
+  timeout: 60000,
   headers: { "Content-Type": "application/json" },
 });
 
@@ -95,5 +46,29 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   },
 );
+
+// ── Resident API helpers ───────────────────────────────────────────────────────
+
+/**
+ * enrollResidentFaceFromDashboard
+ *
+ * Gọi endpoint POST /residents/{residentId}/enroll-face-from-dashboard.
+ * Gửi mảng ảnh Base64 chụp từ webcam trình duyệt lên Backend để xử lý
+ * face encoding, upload ảnh đại diện và cập nhật DB.
+ *
+ * @param {number|string} residentId  - ID của cư dân cần đăng ký khuôn mặt.
+ * @param {{ images: string[] }} imageData
+ *   - images: Mảng chuỗi Base64 Data URL (dạng "data:image/jpeg;base64,...").
+ * @returns {Promise<object>} ResidentResponse từ server.
+ *
+ * Ví dụ:
+ *   const resident = await enrollResidentFaceFromDashboard(42, {
+ *     images: ["data:image/jpeg;base64,/9j/...", ...]
+ *   });
+ */
+export const enrollResidentFaceFromDashboard = (residentId, imageData) =>
+  apiClient
+    .post(`/residents/${residentId}/enroll-face-from-dashboard`, imageData)
+    .then((r) => r.data);
 
 export default apiClient;

@@ -3,9 +3,12 @@ models/resident.py
 Resident ORM model — stores face images and encodings for face recognition.
 """
 
+from __future__ import annotations
 from datetime import datetime, timezone
-from typing import Optional
-from sqlalchemy import String, Text, DateTime, JSON
+from typing import Optional, TYPE_CHECKING
+if TYPE_CHECKING:
+    from models.access_log import AccessLog
+from sqlalchemy import String, Text, DateTime, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from core.database import Base
 
@@ -30,6 +33,12 @@ class Resident(Base):
 
     # JSON-serialized 128-dimensional face encoding vector (list of floats)
     face_encoding: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Cờ đồng bộ với Raspberry Pi.
+    # True  = Pi đã có encoding mới nhất.
+    # False = encoding vừa được cập nhật từ Dashboard, Pi cần tải lại.
+    # ✅ Đã cập nhật thêm server_default="true" để Alembic chạy mượt mà
+    pi_synced: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true", nullable=False)
 
     is_active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(

@@ -21,6 +21,7 @@ class AccessLogResponse(BaseModel):
     method: str
     status: str
     image_url: Optional[str] = None
+    image_public_id: Optional[str] = None
     notes: Optional[str] = None
     model_config = {"from_attributes": True}
 
